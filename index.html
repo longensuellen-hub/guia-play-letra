@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Play Letra</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --primary-dark: #3b5984;
+            --accent: #10b981;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #e1e8ed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-secondary { background-color: #e2e8f0; color: var(--text); }
+        .btn-secondary:hover { background-color: #cbd5e1; }
+        .btn-accent { background-color: var(--accent); color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* PAINEL DE EXPANDIR / RECOLHER */
+        .lyrics-toggle-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .lyrics-container {
+            margin-top: 15px;
+            max-height: 320px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 20px 15px;
+            position: relative;
+            scroll-behavior: smooth;
+            border: 1px solid #1e293b;
+        }
+
+        /* LINHAS DA LETRA (ESTILO SPOTIFY) */
+        .lyric-line {
+            padding: 10px 8px;
+            margin: 4px 0;
+            border-radius: 6px;
+            font-size: 1.05rem;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .lyric-line:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+        }
+
+        /* LINHA EM DESTAQUE NA MÚSICA */
+        .lyric-line.active {
+            color: #38bdf8;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background-color: rgba(56, 189, 248, 0.15);
+            transform: scale(1.02);
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .hidden { display: none !important; }
+
+        .sync-creator-box {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🧪 Laboratório: Módulo de Letras</h1>
+
+    <!-- TOCA-ÁUDIO DE TESTE -->
+    <div class="card">
+        <label for="audioFile" style="font-weight: bold; font-size: 0.9rem;">1. Escolha um áudio para testar:</label>
+        <input type="file" id="audioFile" accept="audio/*" style="margin-top: 8px; display: block; font-size: 0.85rem;">
+        <audio id="mainAudio" controls style="margin-top: 10px;"></audio>
+    </div>
+
+    <!-- CARDE PRINCIPAL DA LETRA COM EXPANDIR / RECOLHER -->
+    <div class="card">
+        <div class="lyrics-toggle-bar" id="toggleLyricsBtn">
+            <span style="font-weight: bold; color: var(--primary-dark);">📜 Letra da Música</span>
+            <button class="btn btn-secondary btn-sm" id="toggleLabel">▼ Expandir</button>
+        </div>
+
+        <div id="lyricsContentArea" class="hidden">
+            <div style="margin-top: 15px;">
+                <div class="tabs">
+                    <button class="tab-btn active" id="tabView">👁️ Visualizar Letra</button>
+                    <button class="tab-btn" id="tabEdit">✏️ Editar / Sincronizar</button>
+                </div>
+
+                <!-- ABA 1: VISUALIZAÇÃO DA LETRA -->
+                <div id="viewMode">
+                    <div class="lyrics-container" id="lyricsDisplay">
+                        <div style="text-align: center; color: #64748b; margin-top: 40px;">
+                            Cole a letra na aba <b>Editar</b> para visualizar aqui.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA 2: EDIÇÃO E CRIADOR DE SINCRONIA -->
+                <div id="editMode" class="hidden">
+                    <label style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 5px;">
+                        Cole a letra (uma frase por linha):
+                    </label>
+                    <textarea id="rawLyricsText" placeholder="Exemplo:&#10;Nesta rua, nesta rua tem um bosque&#10;Que se chama, que se chama solidão&#10;Dentro dele, dentro dele mora um anjo&#10;Que roubou, que roubou meu coração"></textarea>
+                    
+                    <button class="btn btn-sm" id="btnSaveRawLyrics" style="margin-top: 8px;">💾 Salvar Texto</button>
+
+                    <div class="sync-creator-box">
+                        <b>🎙️ Criador de Sincronia Spotify:</b>
+                        <p style="margin: 5px 0 8px 0;">Dê o Play na música acima. A cada frase cantada, aperte o botão abaixo (ou no seu teclado a barra de <b>Espaço</b>) para gravar o tempo exato!</p>
+                        
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-accent btn-sm" id="btnMarkSync">⏱️ Marcar Próxima Linha (Espaço)</button>
+                            <button class="btn btn-secondary btn-sm" id="btnResetSync">✕ Limpar Sincronia</button>
+                        </div>
+                        <div id="syncProgressInfo" style="margin-top: 8px; font-weight: bold;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ESTADO DA APLICAÇÃO DE TESTES
+        let lyricsData = []; // Array: [{ text: "frase", time: 12.4 }]
+        let currentActiveIndex = -1;
+        let isLyricsExpanded = false;
+
+        const mainAudio = document.getElementById('mainAudio');
+        const audioFile = document.getElementById('audioFile');
+        const toggleLyricsBtn = document.getElementById('toggleLyricsBtn');
+        const toggleLabel = document.getElementById('toggleLabel');
+        const lyricsContentArea = document.getElementById('lyricsContentArea');
+        const tabView = document.getElementById('tabView');
+        const tabEdit = document.getElementById('tabEdit');
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
+        const lyricsDisplay = document.getElementById('lyricsDisplay');
+        const rawLyricsText = document.getElementById('rawLyricsText');
+        const btnSaveRawLyrics = document.getElementById('btnSaveRawLyrics');
+        const btnMarkSync = document.getElementById('btnMarkSync');
+        const btnResetSync = document.getElementById('btnResetSync');
+        const syncProgressInfo = document.getElementById('syncProgressInfo');
+
+        // LER ÁUDIO LOCAL SELECIONADO
+        audioFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                mainAudio.src = URL.createObjectURL(file);
+            }
+        });
+
+        // TOGGLE EXPANDIR / RECOLHER
+        toggleLyricsBtn.addEventListener('click', () => {
+            isLyricsExpanded = !isLyricsExpanded;
+            if (isLyricsExpanded) {
+                lyricsContentArea.classList.remove('hidden');
+                toggleLabel.innerText = '▲ Recolher';
+            } else {
+                lyricsContentArea.classList.add('hidden');
+                toggleLabel.innerText = '▼ Expandir';
+            }
+        });
+
+        // NAVEGAÇÃO ENTRE ABAS
+        tabView.addEventListener('click', () => {
+            tabView.classList.add('active');
+            tabEdit.classList.remove('active');
+            viewMode.classList.remove('hidden');
+            editMode.classList.add('hidden');
+            renderLyricsView();
+        });
+
+        tabEdit.addEventListener('click', () => {
+            tabEdit.classList.add('active');
+            tabView.classList.remove('active');
+            editMode.classList.remove('hidden');
+            viewMode.classList.add('hidden');
+            updateSyncInfo();
+        });
+
+        // SALVAR TEXTO DA LETRA
+        btnSaveRawLyrics.addEventListener('click', () => {
+            const lines = rawLyricsText.value.split('\n').filter(l => l.trim() !== '');
+            lyricsData = lines.map(line => ({ text: line.trim(), time: null }));
+            alert('Texto salvo! Agora você pode visualizar ou gravar a sincronia.');
+            updateSyncInfo();
+        });
+
+        // RENDERIZAR A LETRA NA TELA
+        function renderLyricsView() {
+            lyricsDisplay.innerHTML = '';
+            if (lyricsData.length === 0) {
+                lyricsDisplay.innerHTML = `
+                    <div style="text-align: center; color: #64748b; margin-top: 40px;">
+                        Nenhuma letra cadastrada. Vá na aba <b>Editar</b> e cole o texto.
+                    </div>`;
+                return;
+            }
+
+            lyricsData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'lyric-line' + (index === currentActiveIndex ? ' active' : '');
+                div.dataset.index = index;
+                div.innerText = item.text;
+
+                // CLIQUE NA FRASE PULA O ÁUDIO DIRETO PARA O TEMPO SE HOUVER SINCRONIA
+                div.addEventListener('click', () => {
+                    if (item.time !== null) {
+                        mainAudio.currentTime = item.time;
+                    }
+                });
+
+                lyricsDisplay.appendChild(div);
+            });
+        }
+
+        // ACOMPANHAR TEMPO DO ÁUDIO PARA DESTACAR A LINHA ATUAL (ESTILO SPOTIFY)
+        mainAudio.addEventListener('timeupdate', () => {
+            if (lyricsData.length === 0) return;
+
+            const currentTime = mainAudio.currentTime;
+            let activeIdx = -1;
+
+            for (let i = 0; i < lyricsData.length; i++) {
+                if (lyricsData[i].time !== null && lyricsData[i].time <= currentTime) {
+                    activeIdx = i;
+                } else if (lyricsData[i].time !== null && lyricsData[i].time > currentTime) {
+                    break;
+                }
+            }
+
+            if (activeIdx !== currentActiveIndex) {
+                currentActiveIndex = activeIdx;
+                updateLyricsHighlightAndScroll();
+            }
+        });
+
+        // ATUALIZA DESTAQUE VISUAL E ROLA SUAVEMENTE PARA A LINHA CENTRALIZADA
+        function updateLyricsHighlightAndScroll() {
+            const lines = lyricsDisplay.querySelectorAll('.lyric-line');
+            lines.forEach((el, idx) => {
+                if (idx === currentActiveIndex) {
+                    el.classList.add('active');
+                    // ROLAGEM SUAVE PARA O CENTRO DA CAIXA
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        // CRIADOR DE SINCRONIA
+        function markNextLine() {
+            if (lyricsData.length === 0) {
+                alert('Primeiro cole a letra e clique em "Salvar Texto".');
+                return;
+            }
+
+            const nextUnsyncedIdx = lyricsData.findIndex(item => item.time === null);
+            if (nextUnsyncedIdx !== -1) {
+                lyricsData[nextUnsyncedIdx].time = mainAudio.currentTime;
+                updateSyncInfo();
+            } else {
+                alert('Todas as linhas já foram marcadas!');
+            }
+        }
+
+        btnMarkSync.addEventListener('click', markNextLine);
+
+        // ATALHO DE TECLADO: BARRA DE ESPAÇO PARA MARCAR LINHA
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !editMode.classList.contains('hidden') && document.activeElement !== rawLyricsText) {
+                e.preventDefault();
+                markNextLine();
+            }
+        });
+
+        btnResetSync.addEventListener('click', () => {
+            lyricsData.forEach(item => item.time = null);
+            updateSyncInfo();
+            alert('Marcações de tempo zeradas.');
+        });
+
+        function updateSyncInfo() {
+            const syncedCount = lyricsData.filter(item => item.time !== null).length;
+            syncProgressInfo.innerText = `Progresso da Sincronia: ${syncedCount} de ${lyricsData.length} linhas gravadas.`;
+        }
+    </script>
+</body>
+</html>
